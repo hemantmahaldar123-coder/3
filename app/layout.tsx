@@ -21,8 +21,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'TripSync AI - Your Adaptive Travel Intelligence',
-  description: 'Your itinerary should evolve like your journey. TripSync AI continuously adapts your travel experience based on your mood, budget, energy, and real-world changes.',
+  title: 'Wanderly - AI Travel Itinerary Planner',
+  description: 'Your dream trip, planned by AI, just for you. Tell us your vibe, budget and interests - our AI crafts the perfect itinerary that fits YOU. Smart. Fast. Personal.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0a0a0f',
+  themeColor: '#8f5de4',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

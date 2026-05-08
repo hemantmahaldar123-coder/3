@@ -2,6 +2,14 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { 
+  signIn as firebaseSignIn, 
+  signUp as firebaseSignUp, 
+  signOut as firebaseSignOut,
+  subscribeToAuthState,
+  hasFirebaseConfig
+} from '@/lib/firebase'
+import type { User as FirebaseUser } from 'firebase/auth'
 
 export interface User {
   id: string
@@ -15,12 +23,24 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  signup: (name: string, email: string, password: string) => Promise<boolean>
-  logout: () => void
+  isFirebaseEnabled: boolean
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+// Convert Firebase user to our User type
+function firebaseUserToUser(firebaseUser: FirebaseUser): User {
+  return {
+    id: firebaseUser.uid,
+    name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+    email: firebaseUser.email || '',
+    avatar: firebaseUser.photoURL || undefined,
+    createdAt: new Date(firebaseUser.metadata.creationTime || Date.now())
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -28,28 +48,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Check for existing session
-    const storedUser = localStorage.getItem('tripsync_user')
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser)
-        setUser({
-          ...parsed,
-          createdAt: new Date(parsed.createdAt)
-        })
-      } catch {
-        localStorage.removeItem('tripsync_user')
+    if (hasFirebaseConfig) {
+      // Use Firebase auth state listener
+      const unsubscribe = subscribeToAuthState((firebaseUser) => {
+        if (firebaseUser) {
+          setUser(firebaseUserToUser(firebaseUser))
+        } else {
+          setUser(null)
+        }
+        setIsLoading(false)
+      })
+      
+      return () => unsubscribe()
+    } else {
+      // Fallback to localStorage for demo mode
+      const storedUser = localStorage.getItem('wanderly_user')
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser)
+          setUser({
+            ...parsed,
+            createdAt: new Date(parsed.createdAt)
+          })
+        } catch {
+          localStorage.removeItem('wanderly_user')
+        }
       }
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // For demo, accept any valid email format
+    if (hasFirebaseConfig) {
+      const { user: firebaseUser, error } = await firebaseSignIn(email, password)
+      
+      if (firebaseUser) {
+        setUser(firebaseUserToUser(firebaseUser))
+        setIsLoading(false)
+        return { success: true }
+      }
+      
+      setIsLoading(false)
+      return { success: false, error: error || 'Login failed' }
+    }
+    
+    // Demo mode fallback
+    await new Promise(resolve => setTimeout(resolve, 800))
+    
     if (email && password.length >= 6) {
       const newUser: User = {
         id: `user_${Date.now()}`,
@@ -58,18 +105,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date()
       }
       setUser(newUser)
-      localStorage.setItem('tripsync_user', JSON.stringify(newUser))
+      localStorage.setItem('wanderly_user', JSON.stringify(newUser))
       setIsLoading(false)
-      return true
+      return { success: true }
     }
+    
     setIsLoading(false)
-    return false
+    return { success: false, error: 'Invalid credentials. Password must be at least 6 characters.' }
   }
 
-  const signup = async (name: string, email: string, password: string): Promise<boolean> => {
+  const signup = async (name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true)
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    if (hasFirebaseConfig) {
+      const { user: firebaseUser, error } = await firebaseSignUp(email, password, name)
+      
+      if (firebaseUser) {
+        setUser(firebaseUserToUser(firebaseUser))
+        setIsLoading(false)
+        return { success: true }
+      }
+      
+      setIsLoading(false)
+      return { success: false, error: error || 'Signup failed' }
+    }
+    
+    // Demo mode fallback
+    await new Promise(resolve => setTimeout(resolve, 800))
     
     if (name && email && password.length >= 6) {
       const newUser: User = {
@@ -79,17 +141,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: new Date()
       }
       setUser(newUser)
-      localStorage.setItem('tripsync_user', JSON.stringify(newUser))
+      localStorage.setItem('wanderly_user', JSON.stringify(newUser))
       setIsLoading(false)
-      return true
+      return { success: true }
     }
+    
     setIsLoading(false)
-    return false
+    return { success: false, error: 'Please fill all fields. Password must be at least 6 characters.' }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    if (hasFirebaseConfig) {
+      await firebaseSignOut()
+    } else {
+      localStorage.removeItem('wanderly_user')
+    }
     setUser(null)
-    localStorage.removeItem('tripsync_user')
     router.push('/')
   }
 
@@ -98,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isLoading,
       isAuthenticated: !!user,
+      isFirebaseEnabled: hasFirebaseConfig,
       login,
       signup,
       logout

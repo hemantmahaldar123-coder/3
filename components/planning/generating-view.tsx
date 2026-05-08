@@ -154,13 +154,14 @@ export function GeneratingView({ onDecisionMade, showDecisions = true }: Generat
 
       {/* Header */}
       <header className="relative z-10 p-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg gradient-glow flex items-center justify-center">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl gradient-glow flex items-center justify-center shadow-soft">
             <Globe className="w-5 h-5 text-primary-foreground" />
           </div>
-          <span className="text-lg font-bold tracking-tight text-foreground">
-            TripSync<span className="text-primary">AI</span>
-          </span>
+          <div>
+            <span className="text-lg font-bold tracking-tight text-foreground">Wanderly</span>
+            <p className="text-[9px] text-muted-foreground -mt-0.5">AI Travel Planner</p>
+          </div>
         </Link>
       </header>
 

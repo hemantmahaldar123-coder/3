@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useTrip } from '@/context/trip-context'
-import { Globe, Sparkles, ArrowRight } from 'lucide-react'
+import { Plane, Sparkles, ArrowRight } from 'lucide-react'
 
 export function WelcomeStep() {
   const { nextStep } = useTrip()
@@ -15,15 +15,15 @@ export function WelcomeStep() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Animated Globe */}
+      {/* Animated Plane Icon */}
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
         className="relative mb-8"
       >
-        <div className="w-24 h-24 rounded-3xl gradient-glow flex items-center justify-center animate-pulse-glow shadow-card">
-          <Globe className="w-12 h-12 text-primary-foreground" />
+        <div className="w-24 h-24 rounded-3xl gradient-glow flex items-center justify-center animate-pulse-glow shadow-elevated">
+          <Plane className="w-12 h-12 text-primary-foreground" />
         </div>
         <motion.div
           animate={{ rotate: 360 }}

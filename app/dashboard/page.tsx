@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useTrip } from '@/context/trip-context'
+import { useAuth } from '@/context/auth-context'
 import {
   Plus,
   MapPin,
@@ -23,7 +24,10 @@ import {
   Waves,
   Timer,
   BarChart3,
-  BookHeart
+  BookHeart,
+  Sparkles,
+  Heart,
+  Plane
 } from 'lucide-react'
 import type { Trip, AIRecommendation } from '@/types/trip'
 
@@ -93,8 +97,24 @@ function getGreeting() {
   return 'Good Evening'
 }
 
+const quickActions = [
+  { icon: Plus, label: 'Plan Weekend Escape', color: 'bg-primary/10 text-primary' },
+  { icon: IndianRupee, label: 'Optimize Budget', color: 'bg-success/10 text-success' },
+  { icon: Gem, label: 'Find Hidden Gems', color: 'bg-accent/10 text-accent' },
+  { icon: Waves, label: 'Add Relaxation Day', color: 'bg-info/10 text-info' },
+  { icon: Utensils, label: 'Create Food Tour', color: 'bg-warning/10 text-warning' },
+]
+
+const aiInsights = [
+  { icon: Cloud, text: 'Rain expected tomorrow in Goa - consider indoor activities', color: 'text-info' },
+  { icon: BarChart3, text: 'Your Kerala trip is 12% more cost-efficient now', color: 'text-success' },
+  { icon: BellRing, text: 'Budget alert: Goa trip nearing 60% spend', color: 'text-warning' },
+  { icon: Lightbulb, text: 'Suggestion: Shift beach visit to morning slot', color: 'text-primary' },
+]
+
 export default function DashboardPage() {
   const { currentTrip, recommendations, plannedTrips, completedTrips, savedPlaces, userProfile } = useTrip()
+  const { user } = useAuth()
   const [greeting, setGreeting] = useState('Hello')
   
   useEffect(() => {
@@ -107,84 +127,113 @@ export default function DashboardPage() {
   const budgetRemaining = hasActiveTrip 
     ? activeTrip.preferences.budget.total - activeTrip.totalBudgetUsed 
     : 0
-  const quickActions = [
-    { icon: Plus, label: 'Plan Weekend Escape' },
-    { icon: IndianRupee, label: 'Optimize Budget' },
-    { icon: Gem, label: 'Find Hidden Gems' },
-    { icon: Waves, label: 'Add Relaxation Day' },
-    { icon: Utensils, label: 'Create Food Tour' },
-  ]
+  
+  const userName = user?.name || userProfile?.name || 'Traveler'
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto text-[#eaf0ff]">
-      {/* Hero / welcome + AI assistant */}
-      <div className="grid xl:grid-cols-[1.7fr_1fr] gap-6">
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-md">
-          <p className="text-xs text-[#95a1c4] mb-2">DASHBOARD</p>
-          <h1 className="text-3xl font-bold text-white">{greeting}, {userProfile?.name || 'Rahul'} 👋</h1>
-          <p className="text-[#9eaad1] mt-1">Travel Personality: <span className="text-white font-medium">Relaxed Explorer</span></p>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Welcome Section */}
+      <div className="grid xl:grid-cols-[1.7fr_1fr] gap-5">
+        <motion.section 
+          initial={{ opacity: 0, y: 16 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="rounded-2xl bg-sidebar-accent border border-sidebar-border p-6"
+        >
+          <p className="text-xs text-sidebar-foreground/60 font-medium tracking-wider mb-2">DASHBOARD</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-sidebar-foreground">{greeting}, {userName}</h1>
+          <p className="text-sidebar-foreground/70 mt-1">
+            Travel Personality: <span className="text-sidebar-foreground font-medium">Relaxed Explorer</span>
+          </p>
           <div className="flex flex-wrap gap-3 mt-6">
             <Link href="/dashboard/plan-trip">
-              <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl">
+              <Button className="gradient-glow text-primary-foreground rounded-xl font-medium glow-primary">
                 <Compass className="w-4 h-4 mr-2" />
                 Plan New Trip
               </Button>
             </Link>
             <Link href="/trip">
-              <Button variant="outline" className="rounded-xl border-white/20 bg-white/5 text-white">
+              <Button variant="outline" className="rounded-xl border-sidebar-border bg-sidebar hover:bg-sidebar-accent text-sidebar-foreground">
                 Continue Journey
               </Button>
             </Link>
           </div>
         </motion.section>
 
-        <motion.aside initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="rounded-3xl bg-white/5 border border-white/10 p-6 backdrop-blur-md">
+        <motion.aside 
+          initial={{ opacity: 0, y: 16 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.08 }} 
+          className="rounded-2xl bg-sidebar-accent border border-sidebar-border p-6"
+        >
           <div className="flex items-center gap-2 mb-4">
-            <Brain className="w-5 h-5 text-violet-300" />
-            <h2 className="text-lg font-semibold text-white">AI Assistant</h2>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Brain className="w-4 h-4 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold text-sidebar-foreground">AI Assistant</h2>
           </div>
-          <ul className="space-y-3 text-sm text-[#c5cdeb]">
-            <li className="flex gap-2"><Cloud className="w-4 h-4 mt-0.5 text-blue-300" /> Rain expected tomorrow</li>
-            <li className="flex gap-2"><BarChart3 className="w-4 h-4 mt-0.5 text-emerald-300" /> Kerala trip optimized by 12%</li>
-            <li className="flex gap-2"><BellRing className="w-4 h-4 mt-0.5 text-amber-300" /> Budget warning for Goa trip</li>
-            <li className="flex gap-2"><Lightbulb className="w-4 h-4 mt-0.5 text-violet-300" /> Shift beach to morning slot</li>
+          <ul className="space-y-3">
+            {aiInsights.map((insight, idx) => (
+              <motion.li 
+                key={idx}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + idx * 0.1 }}
+                className="flex gap-3 text-sm text-sidebar-foreground/80"
+              >
+                <insight.icon className={`w-4 h-4 mt-0.5 shrink-0 ${insight.color}`} />
+                <span>{insight.text}</span>
+              </motion.li>
+            ))}
           </ul>
         </motion.aside>
       </div>
 
-      {/* Active journey */}
+      {/* Active Journey */}
       {hasActiveTrip && (
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-semibold text-white">Active Journey</h2>
-            <Link href="/dashboard/active-journeys" className="text-sm text-violet-300 inline-flex items-center">View details <ChevronRight className="w-4 h-4" /></Link>
+        <motion.section 
+          initial={{ opacity: 0, y: 16 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-sidebar-foreground">Active Journey</h2>
+            <Link href="/dashboard/active-journeys" className="text-sm text-primary flex items-center gap-1 hover:text-primary/80 transition-colors">
+              View details <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
-          <div className="rounded-3xl overflow-hidden border border-white/10 bg-[#10182f]">
+          <div className="rounded-2xl overflow-hidden border border-sidebar-border bg-sidebar-accent">
             <div className="relative">
-              <img src={activeTrip.coverImage || 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200&auto=format&fit=crop&q=80'} alt={activeTrip.name || activeTrip.preferences.destination} className="h-64 w-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#10182f] via-[#10182f]/30 to-transparent" />
+              <img 
+                src={activeTrip.coverImage || 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=1200&auto=format&fit=crop&q=80'} 
+                alt={activeTrip.name || activeTrip.preferences.destination} 
+                className="h-56 sm:h-64 w-full object-cover" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/30 to-transparent" />
               <div className="absolute left-6 bottom-6">
-                <p className="text-sm text-[#b8c2e4]">{activeTrip.preferences.destination}</p>
-                <h3 className="text-2xl font-bold text-white">{(activeTrip.name || 'GOA TRIP').toUpperCase()} — DAY {activeTrip.currentDay || 2}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <p className="text-sm text-sidebar-foreground/80">{activeTrip.preferences.destination}</p>
+                </div>
+                <h3 className="text-2xl font-bold text-sidebar-foreground">{(activeTrip.name || 'GOA TRIP').toUpperCase()} — DAY {activeTrip.currentDay || 2}</h3>
               </div>
             </div>
-            <div className="p-6 grid md:grid-cols-4 gap-4">
-              <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                <p className="text-xs text-[#9ca7cb]">Today&apos;s Mood</p>
-                <p className="text-lg font-semibold text-white">Relaxed</p>
+            <div className="p-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-xl bg-sidebar border border-sidebar-border p-4">
+                <p className="text-xs text-sidebar-foreground/60 font-medium">Today&apos;s Mood</p>
+                <p className="text-lg font-semibold text-sidebar-foreground mt-1">Relaxed</p>
               </div>
-              <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-                <p className="text-xs text-[#9ca7cb]">Budget Left</p>
-                <p className="text-lg font-semibold text-white">₹{budgetRemaining.toLocaleString()}</p>
+              <div className="rounded-xl bg-sidebar border border-sidebar-border p-4">
+                <p className="text-xs text-sidebar-foreground/60 font-medium">Budget Remaining</p>
+                <p className="text-lg font-semibold text-success mt-1">₹{budgetRemaining.toLocaleString()}</p>
               </div>
-              <div className="rounded-xl bg-white/5 border border-white/10 p-4 md:col-span-2">
-                <p className="text-xs text-[#9ca7cb]">AI Suggestion</p>
-                <p className="text-white">Move beach visit to morning due to rain.</p>
+              <div className="rounded-xl bg-sidebar border border-sidebar-border p-4 sm:col-span-2">
+                <p className="text-xs text-sidebar-foreground/60 font-medium">AI Suggestion</p>
+                <p className="text-sidebar-foreground mt-1">Move beach visit to morning due to afternoon rain forecast.</p>
               </div>
             </div>
             <div className="px-6 pb-6">
               <Link href="/trip">
-                <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl">
+                <Button className="gradient-glow text-primary-foreground rounded-xl font-medium glow-primary">
                   Continue Today&apos;s Journey
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -194,127 +243,179 @@ export default function DashboardPage() {
         </motion.section>
       )}
 
-      {/* Quick actions */}
+      {/* Quick Actions */}
       <section>
-        <h2 className="text-xl font-semibold text-white mb-3">Quick AI Actions</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {quickActions.map((action) => (
-            <button key={action.label} className="rounded-2xl bg-white/5 border border-white/10 p-4 text-left hover:bg-white/8 transition-colors">
-              <action.icon className="w-5 h-5 text-violet-300 mb-2" />
-              <p className="text-sm font-medium text-white">{action.label}</p>
-            </button>
+        <h2 className="text-xl font-semibold text-sidebar-foreground mb-4">Quick AI Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {quickActions.map((action, idx) => (
+            <motion.button 
+              key={action.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="rounded-xl bg-sidebar-accent border border-sidebar-border p-4 text-left hover:bg-sidebar-accent/80 hover:border-sidebar-primary/30 transition-all group"
+            >
+              <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
+                <action.icon className="w-5 h-5" />
+              </div>
+              <p className="text-sm font-medium text-sidebar-foreground">{action.label}</p>
+            </motion.button>
           ))}
         </div>
       </section>
 
-      {/* Recommendations horizontal */}
+      {/* AI Recommendations */}
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl font-semibold text-white">AI Recommendations</h2>
-          <Link href="/dashboard/recommendations" className="text-sm text-violet-300 inline-flex items-center">View all <ChevronRight className="w-4 h-4" /></Link>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-sidebar-foreground">AI Recommendations</h2>
+          <Link href="/dashboard/recommendations" className="text-sm text-primary flex items-center gap-1 hover:text-primary/80 transition-colors">
+            View all <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {(recommendations.length ? recommendations : mockRecommendations).map((rec: AIRecommendation) => (
-            <article key={rec.id} className="min-w-[300px] max-w-[300px] rounded-2xl overflow-hidden bg-white/5 border border-white/10">
-              <img src={rec.image} alt={rec.title} className="w-full h-40 object-cover" />
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
+          {(recommendations.length ? recommendations : mockRecommendations).map((rec: AIRecommendation, idx: number) => (
+            <motion.article 
+              key={rec.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="min-w-[280px] max-w-[280px] rounded-2xl overflow-hidden bg-sidebar-accent border border-sidebar-border hover:border-sidebar-primary/30 transition-all group"
+            >
+              <div className="relative">
+                <img src={rec.image} alt={rec.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-transparent to-transparent" />
+                <span className="absolute bottom-3 right-3 rounded-full bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 font-medium">
+                  {rec.matchScore || 86}% match
+                </span>
+              </div>
               <div className="p-4">
-                <h3 className="font-semibold text-white">{rec.title}</h3>
-                <p className="text-sm text-[#aab4d7] mt-1 line-clamp-2">{rec.description}</p>
-                <div className="mt-3 flex items-center justify-between text-xs">
-                  <span className="text-[#dbe3ff]">Est. Budget: ₹22,000</span>
-                  <span className="rounded-full bg-violet-500/20 text-violet-200 px-2 py-1">{rec.matchScore || 86}% match</span>
+                <h3 className="font-semibold text-sidebar-foreground">{rec.title}</h3>
+                <p className="text-sm text-sidebar-foreground/70 mt-1 line-clamp-2">{rec.description}</p>
+                <div className="mt-3 flex gap-2 flex-wrap">
+                  {rec.tags.slice(0, 3).map((tag) => (
+                    <span key={tag} className="text-xs px-2 py-1 rounded-full bg-sidebar border border-sidebar-border text-sidebar-foreground/70">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </section>
 
-      {/* Planned / History / Saved */}
-      <div className="grid xl:grid-cols-3 gap-5">
-        <section className="rounded-2xl bg-white/5 border border-white/10 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-white">Planned Trips</h3>
-            <Link href="/dashboard/planned-trips" className="text-xs text-violet-300">View all</Link>
+      {/* Planned / History / Saved Grid */}
+      <div className="grid lg:grid-cols-3 gap-5">
+        {/* Planned Trips */}
+        <section className="rounded-2xl bg-sidebar-accent border border-sidebar-border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-sidebar-foreground flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary" />
+              Planned Trips
+            </h3>
+            <Link href="/dashboard/planned-trips" className="text-xs text-primary hover:text-primary/80">View all</Link>
           </div>
           <div className="space-y-3">
             {(plannedTrips.length ? plannedTrips : [mockActiveTrip]).slice(0, 2).map((trip: Trip) => (
-              <div key={trip.id} className="rounded-xl bg-white/5 border border-white/10 p-3">
-                <p className="text-white font-medium">{trip.name || trip.preferences.destination}</p>
-                <p className="text-xs text-[#9ca7cb]">Countdown: 9 days • Budget: ₹{trip.preferences.budget.total.toLocaleString()}</p>
-                <div className="mt-2 flex gap-2">
-                  <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/20 bg-transparent text-white">Edit</Button>
-                  <Button size="sm" className="h-8 rounded-lg bg-violet-600 hover:bg-violet-500 text-white">Continue</Button>
+              <div key={trip.id} className="rounded-xl bg-sidebar border border-sidebar-border p-4">
+                <p className="text-sidebar-foreground font-medium">{trip.name || trip.preferences.destination}</p>
+                <p className="text-xs text-sidebar-foreground/60 mt-1">
+                  Countdown: 9 days • Budget: ₹{trip.preferences.budget.total.toLocaleString()}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Button size="sm" variant="outline" className="h-8 rounded-lg border-sidebar-border bg-transparent text-sidebar-foreground hover:bg-sidebar-accent text-xs">
+                    Edit
+                  </Button>
+                  <Button size="sm" className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs">
+                    Continue
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white/5 border border-white/10 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-white">Travel History</h3>
-            <Link href="/dashboard/history" className="text-xs text-violet-300">View all</Link>
+        {/* Travel History */}
+        <section className="rounded-2xl bg-sidebar-accent border border-sidebar-border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-sidebar-foreground flex items-center gap-2">
+              <BookHeart className="w-4 h-4 text-primary" />
+              Travel History
+            </h3>
+            <Link href="/dashboard/history" className="text-xs text-primary hover:text-primary/80">View all</Link>
           </div>
           <div className="space-y-3">
             {(completedTrips.length ? completedTrips : [mockActiveTrip]).slice(0, 2).map((trip: Trip) => (
-              <div key={trip.id} className="rounded-xl bg-white/5 border border-white/10 p-3">
-                <p className="text-white font-medium">{(trip.preferences.destination || 'Goa').toUpperCase()} • JAN 2026</p>
-                <p className="text-xs text-[#a3aed2] mt-1">14 places explored • Favorite: Beach Cafes</p>
-                <p className="text-xs text-[#9ca7cb] mt-1">AI Summary: Relaxed pace with high food satisfaction.</p>
+              <div key={trip.id} className="rounded-xl bg-sidebar border border-sidebar-border p-4">
+                <p className="text-sidebar-foreground font-medium">{(trip.preferences.destination || 'Goa').toUpperCase()} • JAN 2026</p>
+                <p className="text-xs text-sidebar-foreground/70 mt-1">14 places explored • Favorite: Beach Cafes</p>
+                <p className="text-xs text-sidebar-foreground/60 mt-1 italic">AI Summary: Relaxed pace with high food satisfaction.</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white/5 border border-white/10 p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-white">Saved Places</h3>
-            <Link href="/dashboard/saved" className="text-xs text-violet-300">View all</Link>
+        {/* Saved Places */}
+        <section className="rounded-2xl bg-sidebar-accent border border-sidebar-border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-sidebar-foreground flex items-center gap-2">
+              <Heart className="w-4 h-4 text-primary" />
+              Saved Places
+            </h3>
+            <Link href="/dashboard/saved" className="text-xs text-primary hover:text-primary/80">View all</Link>
           </div>
           <div className="space-y-3">
             {(savedPlaces.length ? savedPlaces : [
               { id: '1', name: 'Cafe Bodega', location: 'Goa', type: 'restaurant' },
               { id: '2', name: 'Silent Beach', location: 'Kerala', type: 'attraction' },
-            ]).slice(0, 4).map((place) => (
-              <div key={place.id} className="rounded-xl bg-white/5 border border-white/10 p-3">
-                <p className="text-white text-sm font-medium">{place.name}</p>
-                <p className="text-xs text-[#9ca7cb]">{place.location} • {place.type}</p>
+              { id: '3', name: 'Senso-ji Temple', location: 'Tokyo', type: 'attraction' },
+            ]).slice(0, 3).map((place) => (
+              <div key={place.id} className="rounded-xl bg-sidebar border border-sidebar-border p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sidebar-foreground text-sm font-medium">{place.name}</p>
+                  <p className="text-xs text-sidebar-foreground/60">{place.location} • {place.type}</p>
+                </div>
               </div>
             ))}
           </div>
         </section>
       </div>
 
-      {/* Insights */}
-      <section className="rounded-2xl bg-white/5 border border-white/10 p-5">
-        <h3 className="font-semibold text-white mb-3">Travel Insights</h3>
-        <div className="grid sm:grid-cols-3 gap-3">
-          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-            <p className="text-xs text-[#9ca7cb]">Favorite Travel Style</p>
-            <p className="text-white font-semibold mt-1">Relaxed Explorer</p>
+      {/* Travel Insights */}
+      <section className="rounded-2xl bg-sidebar-accent border border-sidebar-border p-5">
+        <h3 className="font-semibold text-sidebar-foreground mb-4 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary" />
+          Travel Insights
+        </h3>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div className="rounded-xl bg-sidebar border border-sidebar-border p-4">
+            <p className="text-xs text-sidebar-foreground/60 font-medium">Favorite Travel Style</p>
+            <p className="text-sidebar-foreground font-semibold mt-1">Relaxed Explorer</p>
           </div>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-            <p className="text-xs text-[#9ca7cb]">Average Daily Spend</p>
-            <p className="text-white font-semibold mt-1">₹2,400</p>
+          <div className="rounded-xl bg-sidebar border border-sidebar-border p-4">
+            <p className="text-xs text-sidebar-foreground/60 font-medium">Average Daily Spend</p>
+            <p className="text-sidebar-foreground font-semibold mt-1">₹2,400</p>
           </div>
-          <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-            <p className="text-xs text-[#9ca7cb]">Most Loved</p>
-            <p className="text-white font-semibold mt-1">Beach Cafes</p>
+          <div className="rounded-xl bg-sidebar border border-sidebar-border p-4">
+            <p className="text-xs text-sidebar-foreground/60 font-medium">Most Loved</p>
+            <p className="text-sidebar-foreground font-semibold mt-1">Beach Cafes</p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 pt-6 pb-2 text-sm text-[#97a3c8] flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <footer className="border-t border-sidebar-border pt-6 pb-2 text-sm text-sidebar-foreground/60 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-4">
-          <a href="#" className="hover:text-white">About</a>
-          <a href="#" className="hover:text-white">Privacy</a>
-          <a href="#" className="hover:text-white">Contact</a>
-          <a href="#" className="hover:text-white">GitHub</a>
+          <a href="#" className="hover:text-sidebar-foreground transition-colors">About</a>
+          <a href="#" className="hover:text-sidebar-foreground transition-colors">Privacy</a>
+          <a href="#" className="hover:text-sidebar-foreground transition-colors">Contact</a>
+          <a href="#" className="hover:text-sidebar-foreground transition-colors">GitHub</a>
         </div>
-        <p className="inline-flex items-center gap-1">
-          Built by Team TripSync <BookHeart className="w-4 h-4" />
+        <p className="flex items-center gap-1">
+          Built with love by Team Wanderly <Heart className="w-3 h-3 fill-primary text-primary" />
         </p>
       </footer>
     </div>
